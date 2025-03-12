@@ -1,0 +1,157 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    overflow: auto;
+    flex-direction: column; /* 세로 방향 배치 */
+    overflow-y: auto;
+}
+
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #ffffff;
+    padding: 10px 20vw;
+    font-size: 20px;
+    height: 100px;
+    z-index: 1000;
+}
+
+
+.footer {
+    width: 100%;
+    text-align: center;
+    background-color: #ffffff;
+    bottom: 0;
+    padding: 10px 0;
+    font-size: 11px;
+}
+
+
+body {
+    padding-top: 75px;
+    padding-bottom: 80px;
+    min-height: 100vh;
+    overflow: auto;
+}
+
+.content {
+    flex: 1;
+    left: auto;
+    transform: none;
+    max-width: 1400px;
+    width: 80%;
+    margin: 0 auto;
+    padding-top: 30px;
+    padding-bottom: 100px;
+}
+
+@media (min-width: 1400px) {
+    .container, .container-lg, .container-md, .container-sm, .container-xl, .container-xxl {
+        max-width: 1430px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .navbar, .footer {
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    .content {
+        width: 90%;
+    }
+}
+
+@media (max-width: 768px) {
+    .content {
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+        padding: 15px;
+    }
+}
+
+img, svg {
+    vertical-align: middle;
+    height: 65px;
+    padding: 0px;
+}
+
+.search {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 400px; /* 검색창 크기 조절 */
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    border: 2px solid #00AEEF;
+    border-radius: 25px;
+    overflow: hidden;
+    width: 400px;
+    height: 65px;
+    background: white ;
+}
+
+/* 검색 입력창 */
+.search-input {
+    flex: 1;
+    border: none !important;
+    outline: none !important;
+    padding: 10px 30px !important;
+    font-size: 16px !important;
+    width: 100% !important;
+    background-color: white !important;
+    box-shadow: none !important;
+}
+
+
+
+/* 버튼 스타일 */
+.search-btn {
+    background-color: white;
+    color: white !important;
+    border: none !important;
+    padding: 10px 15px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.3s ease-in-out !important;
+}
+
+.search-btn svg {
+    width: 20px !important;
+    height: 20px !important;
+    fill: black;
+}
+
+/* 호버 효과 */
+.search-btn:hover {
+    background-color: white;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 992px) {
+    .search-input {
+        width: 200px !important; /* 태블릿에서 검색창 크기 조절 */
+    }
+}
+
+@media (max-width: 768px) {
+    .search {
+    display: none !important;
+    }
+}
+
+.navbar-nav .nav-item {
+        padding: 10px;
+        }

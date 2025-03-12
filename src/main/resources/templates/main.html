@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+
+<head>
+    <title>이지티켓 홈페이지</title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            let currentSlide = 0;
+            const slides = document.querySelectorAll(".carousel-item");
+            const indicators = document.querySelectorAll(".indicator");
+
+            // 슬라이드가 하나뿐이면 자동 슬라이드 멈춤
+            if (slides.length <= 1) {
+                return;
+            }
+
+            // 특정 슬라이드로 변경하는 함수
+            function changeSlide(index) {
+                slides[currentSlide].classList.remove("active");
+                indicators[currentSlide].classList.remove("active");
+
+                slides[index].classList.add("active");
+                indicators[index].classList.add("active");
+
+                currentSlide = index;
+            }
+
+            // 자동 슬라이드 기능 (10초마다 변경)
+            function autoSlide() {
+                let nextSlide = (currentSlide + 1) % slides.length;
+                changeSlide(nextSlide);
+            }
+
+            // 자동 슬라이드 실행 (10초마다 변경)
+            let slideInterval = setInterval(autoSlide, 10000);
+
+            // 클릭 시 슬라이드 변경 (버튼 클릭 이벤트 추가)
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener("click", function () {
+                    changeSlide(index);
+
+                    // 자동 슬라이드 초기화 (사용자가 클릭하면 10초 후부터 다시 시작)
+                    clearInterval(slideInterval);
+                    slideInterval = setInterval(autoSlide, 10000);
+                });
+            });
+
+            // 마우스 올리면 자동 슬라이드 멈춤
+            document.querySelector(".carousel-inner").addEventListener("mouseenter", () => {
+                clearInterval(slideInterval);
+            });
+
+            // 마우스 내리면 다시 자동 슬라이드 시작
+            document.querySelector(".carousel-inner").addEventListener("mouseleave", () => {
+                slideInterval = setInterval(autoSlide, 10000);
+            });
+        });
+
+
+                function scrollToTop() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+
+                document.addEventListener('DOMContentLoaded', function () {
+            // CSRF 토큰 및 헤더 설정
+            var csrfToken = document.querySelector("meta[name='_csrf']")?.content || '';
+            var csrfHeader = document.querySelector("meta[name='_csrf_header']")?.content || '';
+
+
+            if (!csrfToken || !csrfHeader) {
+                console.error("CSRF 정보가 설정되지 않았습니다. Spring Security 설정을 확인하세요.");
+            }
+
+            // 채팅 버튼 클릭 이벤트
+            const chatButton = document.getElementById('chatButton');
+            if (chatButton) {
+                chatButton.addEventListener('click', function () {
+                    var memberId = "[[${memberId}]]"; // Thymeleaf에서 가져오기
+
+                    if (!memberId || memberId === "null") {
+                        alert('로그인이 필요합니다.');
+                        window.location.href = '/members/login';
+                        return;
+                    }
+
+                    if (!csrfToken || !csrfHeader) {
+                        alert("보안 설정이 올바르지 않습니다. 페이지를 새로고침하세요.");
+                        return;
+                    }
+
+                    // 서버에 전송할 데이터 준비
+                    const data = { memberId: memberId };
+
+                    // 채팅방 생성 API 호출
+                    fetch('/create-room', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [csrfHeader]: csrfToken
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(async response => {
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            console.error('Server response:', errorText);
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(roomId => {
+                        console.log("Received roomId:", roomId);
+                        if (!roomId || roomId === "null") {
+                            alert("채팅방 생성에 실패했습니다.");
+                            return;
+                        }
+                        // 채팅방 새 창 열기
+                        const screenWidth = window.screen.width;
+                        const windowWidth = 400;
+                        const windowHeight = 600;
+                        const left = screenWidth - windowWidth;
+                        window.open(
+                            '/chat/' + roomId,
+                            '_blank',
+                            `width=${windowWidth},height=${windowHeight},left=${left},top=100,location=no,menubar=no,status=no,toolbar=no`
+                        );
+                    })
+                    .catch(error => {
+                        console.error('채팅방 생성 중 오류 발생:', error);
+                        alert('채팅방 생성에 실패했습니다.');
+                    });
+                });
+            }
+
+            // AI 챗봇 버튼 클릭 이벤트
+            const chatIcon = document.querySelector('.chat-icon');
+            if (chatIcon) {
+                chatIcon.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const screenWidth = window.screen.width;
+                    const windowWidth = 400;
+                    const windowHeight = 600;
+                    const left = screenWidth - windowWidth;
+                    window.open(
+                        '/api/chatbot',
+                        '_blank',
+                        `width=${windowWidth},height=${windowHeight},left=${left},top=100,location=no,menubar=no,status=no,toolbar=no`
+                    );
+                });
+            }
+        });
+
+    </script>
+</th:block>
+
+
+<th:block layout:fragment="css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow: auto;
+        }
+
+        /* 서브 네비게이션 바 */
+        .sub-navbar {
+            position: relative;
+            top: 100px;
+            display: flex;
+            justify-content: left;
+            padding: 10px 20vw;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .sub-navbar {
+                padding: 10px 5vw;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sub-navbar {
+              display: none;
+            }
+        }
+
+        .sub-navbar .nav-item {
+            padding: 10px 8px;
+        }
+
+        .sub-navbar .nav-item a {
+            color: black;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .sub-navbar .nav-item a:hover {
+            color: #00AEEF;
+        }
+
+        /* 전체 너비 설정 */
+        .w-100 {
+            width: 100% !important;
+            height: 650px;
+        }
+
+        /* 캐러셀 스타일 */
+        .carousel-inner {
+            margin-top: 95px;
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+
+        .carousel-indicators {
+            position: relative;
+            bottom: 20px; /* 배너 하단에서 20px 위 */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 25px;
+            margin-left: 0;
+        }
+
+        /* 인디케이터 버튼 스타일 */
+        .indicator {
+            width: 12px;
+            height: 12px;
+            background-color: #bbb;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        /* 현재 활성화된 버튼 */
+        .indicator.active {
+            background-color: #0088CC;
+            transform: scale(1.2);
+        }
+
+        /* 마우스를 올렸을 때 */
+        .indicator:hover {
+        background-color: #00AEEF;
+        }
+
+
+
+        /* 콘텐츠 컨테이너 */
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* 공연 카드 스타일 */
+        .performance {
+            background: white;
+            width: 240px;
+            border-radius: 10px;
+            padding: 0;
+            margin: 15px;
+            margin-bottom: 40px;
+        }
+
+        .performance img {
+            width: 100%;
+            height: 350px;
+            border-radius: 30px;
+        }
+
+        /* 텍스트 스타일 */
+        h2 {
+            font-size: 1.2em;
+            color: #007bff;
+            margin-top: 20px;
+        }
+
+        p {
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        /* 링크 스타일 */
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+
+        #search-results-header {
+            text-align: left;
+            margin-left: 20px;
+            margin-top: 20px;
+            margin-bottom: -20px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        #search-results-header h2 {
+            text-align: center;
+            font-size: 34px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        #search-results-header p {
+            text-align: center;
+            font-size: 16px;
+            color: #666;
+            font-weight: 500;
+        }
+
+
+        .fixed-icons {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .icon {
+            width: 50px;
+            height: 50px;
+            background-color: #00AEEF;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .icon:hover {
+            background-color: #0088CC;
+            transform: translateY(-5px);
+        }
+
+        .icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+    </style>
+</th:block>
+
+<body>
+<div layout:fragment="banner">
+
+    <nav class="sub-navbar">
+        <div class="nav-item"><a href="#">뮤지컬</a></div>
+        <div class="nav-item"><a href="#">콘서트</a></div>
+        <div class="nav-item"><a href="#">연극</a></div>
+        <div class="nav-item"><a href="#">스포츠</a></div>
+        <div class="nav-item"><a href="#">전시/행사</a></div>
+        <div class="nav-item"><a href="#">클래식/무용</a></div>
+        <div class="nav-item"><a href="#">아동/가족</a></div>
+        <div class="nav-item"><a href="#">연극</a></div>
+        <div class="nav-item"><a href="#">레저/캠핑</a></div>
+        <div class="nav-item"><a href="#">토핑</a></div>
+        <div class="nav-item"><a href="#">랭킹</a></div>
+        <div class="nav-item"><a href="#">공지</a></div>
+        <div class="nav-item"><a href="#">지역별</a></div>
+        <div class="nav-item"><a href="#">공연장</a></div>
+    </nav>
+
+    <!-- 메인 배너 -->
+    <div class="carousel-inner">
+        <!-- 배너 데이터가 없을 경우 기본 이미지 표시 -->
+        <div th:if="${#lists.isEmpty(latestContents)}" class="carousel-item active">
+            <a href="#" class="carousel-link">
+                <img src="/img/bannersample.jpg"
+                     class="d-block w-100"
+                     alt="기본 배너">
+            </a>
+        </div>
+
+        <!-- 배너 데이터가 있을 경우 해당 데이터 표시 -->
+        <div th:if="${not #lists.isEmpty(latestContents)}"
+             th:each="banner, stat : ${latestContents}"
+             th:class="'carousel-item ' + ${stat.first ? 'active' : ''}">
+            <a th:href="@{'/item/' + ${banner.itemId}}" class="carousel-link" target="_blank">
+                <img th:if="${banner.bannerImgDto != null}"
+                     id="customBannerImg"
+                     th:src="@{${banner.bannerImgDto.imgUrl}}"
+                     class="d-block w-100"
+                     th:alt="${banner.title}">
+            </a>
+        </div>
+    </div>
+    <!-- 배너 이동 아이콘 (하단 버튼) -->
+    <div class="carousel-indicators">
+        <span th:each="banner, stat : ${latestContents}"
+              th:class="'indicator ' + ${stat.first ? 'active' : ''}"
+              th:attr="onclick='changeSlide(' + ${stat.index} + ')'"
+        ></span>
+    </div>
+</div>
+
+<div layout:fragment="content">
+
+    <div th:if="${searchQuery != null and not searchQuery.isEmpty()}">
+        <div id="search-results-header">
+            <h2>검색 결과</h2>
+            <p>검색된 결과 수: <span
+                    th:text="${(searchResults != null ? #lists.size(searchResults) : 0) + (dbResults != null ? #lists.size(dbResults) : 0)}"></span>
+            </p>
+            <p th:if="${(searchResults == null or #lists.isEmpty(searchResults))
+           and (dbResults == null or #lists.isEmpty(dbResults))}"
+               class="no-results">
+                검색된 공연이 없습니다.
+            </p>
+
+        </div>
+
+
+        <div class="container">
+            <div th:each="item : ${searchResults}" class="performance">
+                <a th:href="@{'/api/kopis/detail/' + ${item.mt20id}}">
+                    <img th:src="${item.poster}" alt="포스터">
+                    <h2 th:text="${item.name}"></h2>
+                    <p><strong>공연 기간:</strong> <span th:text="${item.startDate} + ' ~ ' + ${item.endDate}"></span></p>
+                    <p><strong>공연장:</strong> <span th:text="${item.venue}"></span></p>
+                </a>
+            </div>
+        </div>
+
+        <div class="container">
+            <div th:each="item : ${dbResults}" class="performance">
+                <a th:href="@{'/item/' + ${item.id}}">
+                    <img th:if="${item.itemImgs != null and not #lists.isEmpty(item.itemImgs)}"
+                         th:src="${item.itemImgs[0].imgUrl}" alt="포스터">
+                    <img th:unless="${item.itemImgs != null and not #lists.isEmpty(item.itemImgs)}"
+                         src="/img/default.jpg" alt="포스터">
+                    <h2 th:text="${item.itemNm}"></h2>
+                    <p><strong>공연 기간:</strong> <span th:text="${item.startDate} + ' ~ ' + ${item.endDate}"></span></p>
+                    <p><strong>공연장:</strong> <span th:text="${item.venue}"></span></p>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- 카드 리스트 -->
+    <div class="container">
+        <div th:each="performance : ${performances}" class="performance">
+            <a th:href="@{'/api/kopis/detail/' + ${performance.mt20id}}">
+                <img th:src="${performance.poster}" alt="포스터">
+                <h2 th:text="${performance.name}"></h2>
+                <p><strong>공연 기간:</strong> <span
+                        th:text="${performance.startDate} + ' ~ ' + ${performance.endDate}"></span></p>
+                <p><strong>공연장:</strong> <span th:text="${performance.venue}"></span></p>
+            </a>
+        </div>
+
+
+        <div th:each="item : ${items}" class="performance">
+            <a th:href="@{'/item/' + ${item.id}}">
+                <img th:src="${item.itemImgs[0]?.imgUrl ?: '/img/default.jpg'}" alt="포스터">
+                <h2 th:text="${item.itemNm}"></h2>
+                <p><strong>공연 기간:</strong> <span th:text="${item.startDate} + ' ~ ' + ${item.endDate}"></span></p>
+                <p><strong>공연장:</strong> <span th:text="${item.venue}"></span></p>
+            </a>
+        </div>
+    </div>
+
+
+    <div class="fixed-icons">
+        <button onclick="scrollToTop()" class="icon top-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                 class="bi bi-chevron-bar-up" viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                      d="M3.646 11.854a.5.5 0 0 0 .708 0L8 8.207l3.646 3.647a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 0 0 0 .708M2.4 5.2c0 .22.18.4.4.4h10.4a.4.4 0 0 0 0-.8H2.8a.4.4 0 0 0-.4.4"/>
+            </svg>
+        </button>
+
+        <a href="/api/chatbot" class="icon chat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-chat-dots"
+                 viewBox="0 0 16 16">
+                <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9 9 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.4 10.4 0 0 1-.524 2.318l-.003.011a11 11 0 0 1-.244.637c-.079.186.074.394.273.362a22 22 0 0 0 .693-.125m.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6-3.004 6-7 6a8 8 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a11 11 0 0 0 .398-2"/>
+            </svg>
+        </a>
+        <button id="chatButton" class="icon headset-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-headset"
+                 viewBox="0 0 16 16">
+                <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5"/>
+            </svg>
+        </button>
+    </div>
+
+
+</div>
+</body>
+</html>

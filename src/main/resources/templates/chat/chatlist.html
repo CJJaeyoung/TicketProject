@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 채팅방 목록</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/sockjs/1.1.4/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <th:block layout:fragment="css">
+        <style>
+            body {
+                background-color: #ffffff;
+                color: #333;
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+
+            h2 {
+                text-align: center;
+                color: #007bff;
+                padding: 20px;
+            }
+
+            #chatRooms {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                height: 75vh;
+            }
+
+            .chat-room {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px;
+                margin: 10px 0;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                background-color: #ffffff;
+                transition: transform 0.3s, background-color 0.3s;
+            }
+
+            .chat-room:hover {
+                transform: scale(1.02);
+                background-color: #e3f2fd;
+            }
+
+            .chat-room span {
+                color: #333;
+                font-size: 18px;
+            }
+
+            .chat-room .badge {
+                background-color: #007bff;
+                color: #ffffff;
+                padding: 5px 10px;
+                border-radius: 20px;
+                font-size: 14px;
+                margin-left: 10px;
+            }
+
+            .chat-room .enter-chat {
+                text-decoration: none;
+                color: white;
+                font-weight: bold;
+                padding: 10px 20px;
+                border-radius: 5px;
+                transition: background-color 0.3s, color 0.3s;
+                background-color: #00AEEF;
+            }
+
+            .chat-room .enter-chat:hover {
+                background-color: #0088CC;
+                color: #ffffff;
+            }
+
+            @media (max-width: 768px) {
+                .chat-room {
+                    flex-direction: column;
+                    text-align: center;
+                }
+
+                .chat-room .enter-chat {
+                    margin-top: 10px;
+                }
+            }
+
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <h2>관리자 채팅방 목록</h2>
+    <div id="chatRooms">
+        <div th:each="room : ${chatRooms}" th:id="'chatRoom-' + ${room.roomId}" class="chat-room">
+            <span th:text="${room.member.name}">사용자 이름</span>
+            <span th:if="${room.hasNewMessage}" class="badge">New</span>
+            <a href="#"
+               th:onclick="'openChatWindow(\'' + ${room.roomId} + '\'); return false;'"
+               class="enter-chat">채팅방 입장</a>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        var socket = new SockJS('/app/gs-guide-websocket');
+        var stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function(frame) {
+            stompClient.subscribe('/topic/admin/notifications', function(notification) {
+                var data = JSON.parse(notification.body);
+                updateChatRoom(data.roomId);
+
+                if (Notification.permission === "granted") {
+                    new Notification("새로운 메시지", {
+                        body: "새로운 채팅 메시지가 도착했습니다.",
+                        icon: "/img/notification-icon.png"
+                    });
+                }
+            });
+        });
+
+        function updateChatRoom(roomId) {
+            var chatRoom = $(`#chatRoom-${roomId}`);
+            chatRoom.addClass('new-message');
+
+            var blink = setInterval(function() {
+                chatRoom.fadeOut(500).fadeIn(500);
+            }, 1000);
+
+            setTimeout(function() {
+                clearInterval(blink); // 깜빡임 중지
+            }, 5000);
+        }
+
+        $(document).ready(function() {
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission(); // 권한 요청
+            }
+        });
+
+        function openChatWindow(roomId) {
+            const screenWidth = window.screen.width;
+            const windowWidth = 400;
+            const windowHeight = 600;
+            const left = screenWidth - windowWidth;
+
+            window.open(
+                '/chat/' + roomId,
+                '_blank',
+                `width=${windowWidth},height=${windowHeight},left=${left},top=100,location=no,menubar=no,status=no,toolbar=no`
+            );
+        }
+    </script>
+</th:block>
+
+</body>
+</html> 

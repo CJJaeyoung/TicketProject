@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        function deleteItem(itemId) {
+            if (confirm("정말로 삭제하시겠습니까?")) {
+                var token = $("meta[name='_csrf']").attr("content");
+                var header = $("meta[name='_csrf_header']").attr("content");
+
+                $.ajax({
+                    url: '/admin/item/' + itemId,
+                    type: 'DELETE',
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader(header, token);
+                    },
+                    success: function(result) {
+                        alert("상품이 삭제되었습니다.");
+                        location.href = '/admin/itemList';
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("상품 삭제 중 오류가 발생했습니다.");
+                    }
+                });
+            }
+        }
+    </script>
+</th:block>
+
+<th:block layout:fragment="css">
+    <style>
+        .admin-container {
+            background-color: #ffffff;
+            color: #333;
+            padding: 4rem;
+            min-height: 100vh;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00AEEF;
+        }
+
+        .add-content-btn {
+            background-color: #00AEEF;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 174, 239, 0.2);
+        }
+
+        .add-content-btn:hover {
+            background-color: #0088CC;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 174, 239, 0.3);
+        }
+
+        .content-table {
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table {
+            color: #333;
+            margin-bottom: 0;
+        }
+
+        .table thead {
+            background-color: #00AEEF;
+            color: white;
+        }
+
+        .table thead th {
+            border-bottom: 2px solid #0088CC;
+            color: #00AEEF;
+            font-weight: bold;
+        }
+
+        .table td, .table th {
+            border-color: rgba(0, 174, 239, 0.2);
+            vertical-align: middle;
+            text-align: center;
+            padding: 1rem;
+            background-color: #ffffff;
+            color: #333;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(0, 174, 239, 0.1) !important;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .action-btn img {
+            filter: brightness(0.8);
+            opacity: 0.9;
+            width: 24px;
+            height: 24px;
+        }
+
+        .action-btn:hover img {
+            opacity: 1;
+            filter: brightness(1) sepia(1) saturate(3) hue-rotate(190deg);
+        }
+
+    </style>
+</th:block>
+
+<div layout:fragment="content" class="admin-container">
+    <div class="admin-header">
+        <h1 class="admin-title">공연 관리</h1>
+        <a href="/admin/newitem" class="add-content-btn">
+            <i class="fas fa-plus"></i> 새 공연 추가
+        </a>
+    </div>
+
+    <div class="content-table">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>포스터</th>
+                <th>공연명</th>
+                <th>가격</th>
+                <th>장르</th>
+                <th>공연장</th>
+                <th>재고</th>
+                <th>등록일</th>
+                <th>수정일</th>
+                <th>관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${items}">
+                <td th:text="${item.id}"></td>
+                <td>
+                    <img th:src="@{${item.itemImgDtoList[0].imgUrl}}" width="80" height="100" alt="포스터">
+                </td>
+                <td th:text="${item.itemNm}"></td>
+                <td th:text="${item.price}"></td>
+                <td th:text="${T(com.ticket.constant.Genre).valueOf(item.genre).displayName}"></td>
+                <td th:text="${item.venue}"></td>
+                <td th:text="${item.stockNumber}"></td>
+                <td th:text="${#temporals.format(item.regTime, 'yyyy-MM-dd HH:mm')}"></td>
+                <td th:text="${item.regTime != item.updateTime ? #temporals.format(item.updateTime, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+                <td>
+                    <div class="action-buttons">
+                        <a th:href="@{'/admin/item/' + ${item.id}}" class="action-btn">
+                            <img src="/img/correction_btn.png" alt="수정" title="수정">
+                        </a>
+                        <button type="button" class="action-btn" th:onclick="'deleteItem(' + ${item.id} + ')'">
+                            <img src="/img/delete_btn.png" alt="삭제" title="삭제">
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</html>

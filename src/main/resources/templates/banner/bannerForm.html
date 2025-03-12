@@ -1,0 +1,245 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        $(document).ready(function(){
+            bindDomEvent();
+        });
+
+        function bindDomEvent(){
+            $("#bannerImgFile").on("change", function(){
+                var fileName = $(this).val().split("\\").pop();
+                var fileExt = fileName.substring(fileName.lastIndexOf(".")+1);
+                fileExt = fileExt.toLowerCase();
+
+                if(fileExt != "jpg" && fileExt != "jpeg" && fileExt != "gif"
+                && fileExt != "png" && fileExt != "bmp"){
+                    alert("이미지 파일만 등록이 가능합니다.");
+                    $(this).val("");
+                    return;
+                }
+
+                // 이미지 크기 체크
+                // var file = this.files[0];
+                // var _URL = window.URL || window.webkitURL;
+                // var img = new Image();
+
+                // img.onload = function() {
+                //     if(this.width !== 1389 || this.height !== 600) {
+                //         alert("이미지 크기는 1389x600 픽셀이어야 합니다.");
+                //         $("#bannerImgFile").val("");
+                //     }
+                // };
+                img.src = _URL.createObjectURL(file);
+            });
+        }
+    </script>
+</th:block>
+
+<th:block layout:fragment="css">
+    <style>
+       body {
+           background: #ffffff;
+           min-height: 100vh;
+           color: #333;
+           font-family: 'Arial', sans-serif;
+           display: flex;
+           justify-content: center;
+       }
+
+       .container {
+           max-width: 850px;
+           padding: 40px;
+           background: #ffffff;
+           border-radius: 12px;
+           margin: 40px auto;
+           box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.08),
+                       -10px -10px 30px rgba(255, 255, 255, 0.9); /* 네오모피즘 그림자 */
+           animation: fadeIn 0.6s ease-in-out;
+       }
+
+       h2 {
+           text-align: center;
+           font-size: 24px;
+           font-weight: bold;
+           margin-bottom: 30px;
+           position: relative;
+           color: #333;
+       }
+
+       h2::after {
+           content: '';
+           display: block;
+           width: 60px;
+           height: 3px;
+           background: #00AEEF;
+           margin: 10px auto 0;
+           border-radius: 2px;
+       }
+
+       /* ====== 입력 필드 스타일 ====== */
+       .input-group {
+           margin-bottom: 20px;
+           display: flex;
+           align-items: center;
+           background: #ffffff;
+           border-radius: 8px;
+           padding: 12px;
+           border: 1px solid #ddd;
+           transition: all 0.1s ease;
+       }
+
+
+
+       .input-group .input-group-text {
+           background: #f7f9fc;
+           color: #333;
+           font-weight: 500;
+           border-radius: 8px 0 0 8px;
+           padding: 12px 15px;
+           min-width: 140px;
+           text-align: center;
+           border-right: 1px solid #ddd;
+       }
+
+       .form-control {
+           background: #ffffff;
+           color: #333;
+           padding: 12px 15px;
+           border-radius: 0 8px 8px 0;
+           font-size: 16px;
+           width: 100%;
+           transition: all 0.1s ease;
+       }
+
+       textarea.form-control {
+           resize: vertical;
+       }
+
+       .form-control:focus {
+           background: #e6f7ff;
+           border: none;
+           outline: none;
+           box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+       }
+
+       .btn {
+           background-color: #00AEEF;
+           color: white;
+           padding: 14px 22px;
+           font-size: 17px;
+           font-weight: 600;
+           border-radius: 8px;
+           border: none;
+           width: 25%;
+           text-align: center;
+           transition: all 0.3s ease;
+           cursor: pointer;
+
+       }
+
+
+       .imageFile {
+           padding: 12px;
+           border-radius: 8px;
+           transition: border-color 0.3s ease;
+           background: #f7f9fc;
+           text-align: center;
+       }
+
+
+       .fieldError {
+           color: #dc3545;
+           font-size: 14px;
+           margin-top: 5px;
+       }
+
+       @keyframes fadeIn {
+           from {
+               opacity: 0;
+               transform: translateY(15px);
+           }
+           to {
+               opacity: 1;
+               transform: translateY(0);
+           }
+       }
+
+    </style>
+</th:block>
+
+<div layout:fragment="content">
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="mb-4">배너 업로드</h2>
+
+                <form role="form" method="post" enctype="multipart/form-data" th:object="${bannnerFormDto}">
+                    <input type="hidden" th:field="*{id}">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">제목</span>
+                        </div>
+                        <input type="text" th:field="*{title}" class="form-control" placeholder="배너 제목을 입력해주세요">
+                    </div>
+                    <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="fieldError">Incorrect data</p>
+
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">설명</span>
+                        </div>
+                        <textarea th:field="*{description}" class="form-control" rows="3" placeholder="배너 설명을 입력해주세요" style="height: 45px;"></textarea>
+                    </div>
+                    <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="fieldError">Incorrect data</p>
+
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">아이템 아이디</span>
+                        </div>
+                        <input type="text" th:field="*{itemId}" class="form-control" placeholder="배너 클릭 시 이동할 URL을 입력해주세요">
+                    </div>
+                    <p th:if="${#fields.hasErrors('itemId')}" th:errors="*{itemId}" class="fieldError">Incorrect data</p>
+
+                    <div th:if="${bannnerFormDto.bannerImgDto == null}">
+                        <div class="input-group mb3">
+                            <label class="image input-group-text">배너 이미지</label>
+                            <input type="file" class="imageFile form-control" id="bannerImgFile" name="bannerImgFile">
+                        </div>
+                    </div>
+
+                    <div th:if="${bannnerFormDto.bannerImgDto != null}">
+                        <div class="file-upload-container">
+                            <div class="input-group mb3">
+                                <label class="image input-group-text">배너 이미지</label>
+                                <div class="current-file">
+                                    <span class="file-path" th:text="${bannnerFormDto.bannerImgDto.oriImgName}"></span>
+                                </div>
+                            </div>
+                            <div class="input-group mb3">
+                                <label class="image input-group-text">파일 변경</label>
+                                <input type="file" class="imageFile form-control" id="bannerImgFile" name="bannerImgFile">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${#strings.isEmpty(bannnerFormDto.id)}" style="text-align: center">
+                        <button th:formaction="@{/admin/banners/new}" type="submit" class="btn btn-primary">저장</button>
+                    </div>
+                    <div th:unless="${#strings.isEmpty(bannnerFormDto.id)}" style="text-align: center">
+                        <button th:formaction="@{'/admin/banners/' + ${bannnerFormDto.id} + '/modify'}" type="submit" class="btn btn-primary">수정</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</html> 

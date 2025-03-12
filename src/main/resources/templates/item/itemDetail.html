@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상품 정보 페이지</title>
+
+
+<head>
+    <script src="https://cdn.iamport.kr/js/iamport.payment-1.1.8.js" async></script>
+
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+
+    <meta id="userEmail" th:attr="data-value=${currentUserEmail}"/>
+    <meta id="userName" th:attr="data-value=${currentUserName}"/>
+    <meta id="userTel" th:attr="data-value=${currentUserTel}"/>
+</head>
+
+
+<th:block layout:fragment="css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            min-width: 1300px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .product {
+            display: flex;
+            align-items: flex-start;
+            gap: 50px;
+            padding: 30px;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+        }
+
+
+
+        .product-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-title {
+            font-size: 35px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 55px;
+        }
+
+        .product-details p {
+            font-size: 25px;
+            margin: 10px 0;
+            color: #444;
+            margin-bottom: 30px;
+        }
+
+        .product-details strong {
+            color: #222;
+            font-size: 30px;
+        }
+
+        .price-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .reserve-btn {
+            margin-top: 10px;
+            background-color: #00AEEF;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 25px;
+            width: 250px;
+            margin: auto;
+        }
+
+        .reserve-btn:hover {
+            background-color: #0088CC;
+        }
+
+
+        .info-box {
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .info-box ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .info-box ul li {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .poster-container img {
+            width: 500px;
+            height: 700px;
+            object-fit: cover;
+            border-radius: 5px;
+            display: block;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #reserve-btn-container .reserve-btn {
+            background-color: #00AEEF;
+            color: white;
+            padding: 12px 18px;
+            font-size: 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 350px;
+            margin: 100px auto 0 auto;
+        }
+
+        #reserve-btn-container .reserve-btn:hover {
+            background-color: #0088CC;
+        }
+
+        .info-buttons {
+            margin-left: 35px;
+            display: flex;
+            justify-content: left;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .info-buttons button {
+            background-color: white;
+            border: none;
+            padding: 4px 7px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border-bottom: 3px solid gray;
+            color: #777;
+        }
+
+        .info-buttons button:hover {
+            background-color: white;
+        }
+
+        .info-buttons button.active {
+            color: #00AEEF !important;
+            border-bottom: 3px solid #00AEEF;
+        }
+
+
+
+        .info-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 30px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+
+        .info-content {
+            display: none;
+            font-size: 18px;
+            text-align: left;
+            padding: 50px;
+            border-radius: 30px;
+            background: white;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-detail {
+            white-space: pre-wrap;
+            max-width: 800px;
+            overflow-wrap: break-word;
+        }
+
+        .info-content.active {
+            display: block;
+        }
+
+        .price-button-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .price-button {
+            background-color: #ddd;
+            color: #333;
+            border: none;
+            padding: 12px 18px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .price-button:hover {
+            background-color: #bbb;
+            transform: scale(1.05);
+        }
+
+        .price-button.selected {
+            background-color: #00AEEF !important;
+            color: white;
+        }
+
+
+
+
+        .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background-color: white;
+        padding: 40px;
+        border-radius: 10px;
+        width: 500px;
+        text-align: center;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+   .modal-content button {
+        background-color: #00AEEF;
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        margin-top: 20px;
+        width: 200px;
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    </style>
+</th:block>
+
+<div layout:fragment="content">
+    <input type="hidden" id="performanceId" th:value="${itemFormDto.id}" />
+
+    <div class="container">
+        <div class="product">
+            <div class="poster-container">
+                <th:block th:if="${itemFormDto.itemImgDtoList != null and itemFormDto.itemImgDtoList.size() > 0}">
+                    <img th:src="${itemFormDto.itemImgDtoList[0]?.imgUrl}" alt="이미지">
+                </th:block>
+            </div>
+            <div class="product-info">
+                <h1 class="product-title" th:text="${itemFormDto.itemNm}"></h1>
+                <div class="product-details">
+                    <p><strong>공연기간:</strong> <span th:text="${itemFormDto.startDate}"></span></p>
+                    <p><strong>공연장:</strong> <span th:text="${itemFormDto.venue}"></span></p>
+                    <p><strong>공연시간:</strong> <span th:text="${itemFormDto.prfruntime}"></span></p>
+                    <p><strong>장르:</strong>
+                        <span th:text="${T(com.ticket.constant.Genre).valueOf(itemFormDto.genre).displayName}"></span>
+                    </p>
+                    <p><strong>관람연령:</strong> <span th:text="${itemFormDto.prfage}"></span></p>
+                    <p><strong>재고:</strong> <span th:text="${itemFormDto.stockNumber}"></span> 개</p>
+                    <div class="price-button-container">
+                        <div th:each="entry : ${priceOptions}">
+                            <button class="price-button"
+                                    th:text="${entry['seatType']} + ' ' + ${entry['price']}"
+                                    th:data-price="${entry['price']}"
+                                    onclick="selectPrice(this)">
+                            </button>
+                        </div>
+                    </div>
+
+                    <br>
+                    <hr>
+                    <p><strong>선택한 가격: </strong><span id="selectedPrice">없음</span></p>
+                </div>
+                <button class="reserve-btn" onclick="handleReserve()">예매하기</button>
+
+                <div id="waitingModal" class="modal">
+                    <div class="modal-content">
+                        <h2>대기 중...</h2>
+                        <p>현재 대기번호: <span id="waitingNumber"></span></p>
+                        <p>순서가 되면 자동으로 결제가 진행됩니다.</p>
+                        <button onclick="cancelWaiting()">취소</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="info-buttons">
+            <button onclick="showInfo('item-info')">공연정보</button>
+            <button onclick="showInfo('location-info')">장소</button>
+            <button onclick="showInfo('reviews-info')">관람후기</button>
+            <button onclick="showInfo('expectations-info')">기대평</button>
+        </div>
+
+        <div class="info-box">
+            <div id="item-info" class="info-content">
+                <div class="item-detail">
+                    <p th:text="${itemFormDto.itemDetail}" class="item-detail"></p>
+                </div>
+                <th:block
+                        th:if="${itemFormDto.itemImgDtoList != null and not #lists.isEmpty(itemFormDto.itemImgDtoList)}">
+                    <th:block th:each="img, iterStat : ${itemFormDto.itemImgDtoList}">
+                        <img th:src="@{${img.imgUrl}}" alt="공연 이미지"
+                             style="width: 800px; height: 400px; object-fit: cover; display: block;">
+                    </th:block>
+                </th:block>
+                <th:block th:if="${itemFormDto.itemImgDtoList == null or #lists.isEmpty(itemFormDto.itemImgDtoList)}">
+                    <p>이미지가 없습니다.</p>
+                </th:block>
+            </div>
+            <div id="location-info" class="info-content">
+                <h2>장소 정보</h2>
+                <p id="venue" th:text="${item.venue}"></p>
+                <div id="map" style="width:1000px;height:600px;"></div>
+            </div>
+            <div id="reviews-info" class="info-content">
+                <h2>관람 후기</h2>
+                <p>사용자들이 남긴 관람 후기가 표시됩니다.</p>
+            </div>
+            <div id="expectations-info" class="info-content">
+                <h2>기대평</h2>
+                <p>예매자들의 기대평이 여기에 표시됩니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<th:block layout:fragment="script">
+    <script type="text/javascript" th:inline="javascript">
+        var kakaoApiKey = [[${kakaoApiKey}]];
+        var kakaoRestApiKey = [[${kakaoRestApiKey}]];
+    </script>
+
+    <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoApiKey}&libraries=services&autoload=false|}"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            showInfo('item-info'); // 기본으로 '공연정보' 활성화
+            checkKakaoMapLoaded();
+            initializeIamport();
+        });
+
+        function selectPrice(button) {
+            document.querySelectorAll('.price-button').forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+
+            let priceText = button.getAttribute("data-price").replace(/,/g, "").replace("원", "");
+            let price = parseInt(priceText, 10);
+
+            document.getElementById('selectedPrice').innerText = price.toLocaleString() + '원';
+        }
+
+        function showInfo(sectionId) {
+            document.querySelectorAll('.info-buttons button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="showInfo('${sectionId}')"]`).classList.add('active');
+
+            document.querySelectorAll('.info-content').forEach(section => section.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function checkKakaoMapLoaded() {
+            let checkKakaoLoaded = setInterval(function () {
+                if (window.kakao && window.kakao.maps) {
+                    clearInterval(checkKakaoLoaded);
+                    kakao.maps.load(initKakaoMap);
+                }
+            }, 500);
+        }
+
+        function initKakaoMap() {
+            var container = document.getElementById('map');
+            if (!container) {
+                console.error("지도 컨테이너(#map)를 찾을 수 없습니다.");
+                return;
+            }
+
+            var map = new kakao.maps.Map(container, {
+                center: new kakao.maps.LatLng(37.5665, 126.9780), // 기본 위치 (서울)
+                level: 4
+            });
+
+            var venueName = document.getElementById("venue").innerText.trim();
+            if (!venueName) {
+                console.error("공연장 이름이 없습니다.");
+                return;
+            }
+
+            fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(venueName)}`, {
+                method: "GET",
+                headers: { "Authorization": `KakaoAK ${kakaoRestApiKey}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.documents || data.documents.length === 0) return;
+
+                var place = data.documents[0];
+                var coords = new kakao.maps.LatLng(place.y, place.x);
+
+                setTimeout(() => {
+                    map.relayout();
+                    map.setCenter(coords);
+                }, 100);
+
+                window.addEventListener("resize", function () {
+                    map.relayout();
+                    map.setCenter(coords);
+                });
+
+                var marker = new kakao.maps.Marker({ map: map, position: coords });
+                var infowindow = new kakao.maps.InfoWindow({
+                    content: `<div style="padding:5px;font-size:14px;">${place.place_name}</div>`
+                });
+                infowindow.open(map, marker);
+            })
+            .catch(error => console.error("API 요청 오류: ", error));
+        }
+
+        function initializeIamport() {
+            let checkIMP = setInterval(function () {
+                if (typeof window.IMP !== "undefined") {
+                    clearInterval(checkIMP);
+                    window.IMP.init("imp67337861"); // 가맹점 식별코드
+                }
+            }, 500);
+        }
+
+        let waitingInterval = null;
+        let currentUser = {};
+
+        function handleReserve() {
+    let itemNm = document.querySelector(".product-title").innerText;
+    let selectedPrice = document.getElementById("selectedPrice").innerText;
+    let performanceIdElement = document.getElementById("performanceId");
+
+    if (!performanceIdElement) {
+        console.error("performanceId 요소를 찾을 수 없습니다.");
+        alert("시스템 오류가 발생했습니다. 다시 시도해주세요.");
+        return;
+    }
+
+    let performanceId = performanceIdElement.value; // 올바르게 가져오기
+
+    if (selectedPrice === "없음") {
+        alert("가격을 선택해주세요!");
+        return;
+    }
+
+            currentUser.email = $("#userEmail").attr("data-value") || "default@test.com";
+            currentUser.name = $("#userName").attr("data-value") || "임시이름";
+            currentUser.tel = $("#userTel").attr("data-value") || "010-1234-5678";
+
+
+    if (!currentUser.email || currentUser.email === "default@test.com") {
+        alert("로그인이 필요합니다. 로그인 페이지로 이동합니다.");
+        window.location.href = "/members/login";
+        return;
+    }
+
+    let performanceDate = getPerformanceInfo("공연기간");
+
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute("content");
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");
+
+    // 예매 요청 상태 저장 API 호출
+    fetch("/ticket/request-reservation", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            [csrfHeader]: csrfToken
+        },
+        body: new URLSearchParams({
+            userEmail: currentUser.email
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("예매 요청 상태 저장 응답:", data);
+
+        if (data.message) {
+            // 예매 요청 후 대기열 추가 요청
+            return fetch("/ticket/join-waiting", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    [csrfHeader]: csrfToken
+                },
+                body: new URLSearchParams({
+                    userEmail: currentUser.email,
+                    performanceId: performanceId  // 올바르게 전달
+                })
+            });
+        } else {
+            throw new Error("예매 요청 상태 저장 실패");
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("대기열 응답:", data);
+        if (data.message) {
+            alert(data.message);
+            document.getElementById("waitingModal").style.display = "block";
+            document.getElementById("waitingNumber").innerText = "대기번호: " + (data.queueSize || "확인 중");
+
+            checkWaitingStatus(currentUser.email, itemNm, selectedPrice, performanceDate, performanceId);
+        } else {
+            alert("예매 요청 실패. 다시 시도해주세요.");
+        }
+    })
+    .catch(error => {
+        console.error("예매 요청 오류:", error);
+        alert("서버 오류가 발생했습니다. 관리자에게 문의하세요.");
+    });
+}
+
+function checkWaitingStatus(userEmail, itemNm, selectedPrice, performanceDate, performanceId) {
+    let checkInterval = setInterval(() => {
+        fetch(`/ticket/check-status?userEmail=${encodeURIComponent(userEmail)}&performanceId=${encodeURIComponent(performanceId)}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(" 대기열 상태 업데이트:", data);
+
+                if (data.status === "입장 가능") {
+                    clearInterval(checkInterval); // 상태 확인 중지
+                    document.getElementById("waitingModal").style.display = "block";
+                    document.getElementById("waitingNumber").innerText = "입장 가능! 결제 진행 중...";
+
+                    setTimeout(() => {
+                        closeWaitingModal();
+                        requestPay(itemNm, selectedPrice, performanceDate, currentUser);
+                    }, 5000); // 5초 후 결제 진행
+                }
+            })
+            .catch(error => console.error("대기 상태 확인 오류:", error));
+    }, 3000); // 3초마다 체크
+}
+
+
+// 결제 진행 함수
+function requestPay(itemNm, selectedPrice, performanceDate, currentUser) {
+    IMP.request_pay({
+        pg: "danal",
+        pay_method: "card",
+        merchant_uid: "ORDER_" + new Date().getTime(),
+        name: itemNm,
+        amount: parseInt(selectedPrice.replace(/[^0-9]/g, ""), 10),
+        buyer_email: currentUser.email,
+        buyer_name: currentUser.name,
+        buyer_tel: currentUser.tel
+    }, function (rsp) {
+        if (rsp.success) {
+            const token = $("meta[name='_csrf']").attr("content");
+            const header = $("meta[name='_csrf_header']").attr("content");
+
+            const requestData = {
+                itemNm: itemNm,
+                impUid: rsp.imp_uid,
+                merchantUid: rsp.merchant_uid,
+                price: rsp.paid_amount,
+                status: rsp.status,
+                buyerName: currentUser.name,
+                buyerEmail: currentUser.email,
+                buyerTel: currentUser.tel,
+                performanceDate: performanceDate
+            };
+            console.log("전송 데이터:", requestData);
+
+            // 결제 성공 후 Redis 대기열에서 제거
+            jQuery.ajax({
+                url: "/payment/complete",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    [header]: token
+                },
+                data: JSON.stringify(requestData)
+            }).done(function (response) {
+                console.log(response);
+                alert('결제가 완료되었습니다.');
+
+                removeFromWaitingQueue(currentUser.email); // Redis 대기열 제거
+
+                window.location.href = "/payment/success";
+            }).fail(function (error) {
+                console.error("결제 요청 오류:", error);
+                alert('결제 처리 중 오류가 발생했습니다.');
+            });
+
+        } else {
+            alert('결제가 실패했습니다: ' + rsp.error_msg);
+            window.location.href = "/payment/failure";
+        }
+    });
+}
+
+// 결제 완료 후 Redis 대기열에서 제거
+function removeFromWaitingQueue(userEmail) {
+    fetch("/ticket/complete-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ userEmail })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Redis 대기열 제거:", data.message);
+    })
+    .catch(error => {
+        console.error("Redis 대기열 제거 오류:", error);
+    });
+}
+
+// 대기 모달창 닫기
+function closeWaitingModal() {
+    document.getElementById("waitingModal").style.display = "none";
+}
+
+// 공연 정보 가져오기
+function getPerformanceInfo(label) {
+    let element = [...document.querySelectorAll(".product-details p strong")]
+        .find(el => el.innerText.includes(label));
+
+    return element && element.nextElementSibling ? element.nextElementSibling.innerText : "정보 없음";
+}
+
+// CSRF 토큰 자동 추가
+$(document).ready(function () {
+    $.ajaxSetup({
+        beforeSend: function (xhr) {
+            const token = $('meta[name="_csrf"]').attr('content');
+            const header = $('meta[name="_csrf_header"]').attr('content');
+            if (token && header) {
+                xhr.setRequestHeader(header, token);
+            }
+        }
+    });
+});
+    </script>
+</th:block>
+</html>

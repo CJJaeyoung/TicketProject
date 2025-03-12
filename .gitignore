@@ -1,0 +1,38 @@
+# 환경 변수
+.env
+.env.*
+
+# Python 관련
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+venv/
+
+# Node.js 관련
+node_modules/
+package-lock.json
+yarn.lock
+
+# 빌드 결과물
+/dist/
+/build/
+/out/
+/target/
+
+# Docker 관련
+docker-compose.override.yml
+*.tar
+*.pid
+*.sock
+
+# IDE & 시스템 파일
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 프로퍼티 제외
+*.properties
+**/*.properties

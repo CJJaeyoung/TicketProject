@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div class="footer" th:fragment="footer">
+    <footer>
+        <div class="footer-content">
+            <div class="social-links text-center">
+                <a href="https://fast.com/ko/" target="_blank" class="social-link">속도 테스트</a>
+                <a href="/" class="social-link">이용약관</a>
+                <a href="/" class="social-link">법적 고지</a>
+            </div>
+
+            <div class="company-info text-center">
+                <div class="info-row">
+                    <span>대표자 : 최재영</span>
+                    <span class="divider">|</span>
+                    <span>사업자등록번호: 123-12-121212</span>
+                </div>
+                <div class="info-row">
+                    <span>사업장: 인천광역시 부평구 부평1동 534-48</span>
+                    <span class="divider">|</span>
+                    <span>대표메일: test@test.com</span>
+                    <span class="divider">|</span>
+                    <span>고객센터: 1234-5678</span>
+                </div>
+            </div>
+
+            <div class="copyright text-center">
+                <p>&copy; 2025 EZTICKET</p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<style>
+
+
+    .footer-content {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .social-links {
+        margin-bottom: 30px;
+    }
+
+    .social-link {
+        color: #6E6E6E !important;
+        font-size: 24px;
+        margin-right: 24px;
+        transition: color 0.2s;
+    }
+
+    .social-link:hover {
+        color: #fff;
+    }
+
+    .company-info {
+        margin-bottom: 20px;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .info-row {
+        margin: 5px 0;
+        white-space: nowrap;
+    }
+
+    .info-row span {
+        display: inline-block;
+    }
+
+    .divider {
+        margin: 0 10px;
+        color: #6E6E6E;
+    }
+
+    .copyright {
+        font-size: 11px;
+        color: #6E6E6E;
+        text-align: center;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .company-info {
+            font-size: 11px;
+        }
+
+        .info-row {
+            white-space: normal;
+        }
+
+        .divider {
+            margin: 0 5px;
+        }
+    }
+</style>
+</html>

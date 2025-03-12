@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>결제 성공</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .success-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .success-container h1 {
+            color: #bd2130;
+        }
+
+        .success-container p {
+            margin: 20px 0;
+        }
+
+        button {
+            background-color: #00AEEF;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0088CC;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="success-container">
+        <h1>🎉 결제 성공 🎉</h1>
+        <br>
+        <button onclick="location.href='/payment/orderList'">구독내역 이동</button>
+        <button onclick="location.href='/'">홈으로 이동</button>
+    </div>
+</div>
+</body>
+</html>
