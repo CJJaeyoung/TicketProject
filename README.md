@@ -2,7 +2,7 @@
 
 # 🎫 **Spring Boot 티켓팅 홈페이지 프로젝트**
 
-> 간편한 티켓 예약 및 관리를 제공하는 실시간 티켓팅 플랫폼, EzTicket
+간편한 티켓 예약 및 관리를 제공하는 실시간 티켓팅 플랫폼, EzTicket
 
 
 <br>
@@ -178,7 +178,22 @@ CI/CD
     │   │   │       │   └── Payment.java
     │   │   │       ├── 📂exception
     │   │   │       │   └── OutOfStockException.java
-    │   │   │       ├── repository
+    │   │   │       ├── 📂repository
+    │   │   │       │   ├── BannerImgRepository.java
+    │   │   │       │   ├── BannersRepository.java
+    │   │   │       │   ├── ChatMessageRepository.java
+    │   │   │       │   ├── ChatRoomRepository.java
+    │   │   │       │   ├── ItemCrawlRepository.java
+    │   │   │       │   ├── ItemCrawlRepositoryCustom.java
+    │   │   │       │   ├── ItemCrawlRepositoryImpl.java
+    │   │   │       │   ├── ItemImgRepository.java
+    │   │   │       │   ├── ItemRepository.java
+    │   │   │       │   ├── ItemRepositoryCustom.java
+    │   │   │       │   ├── ItemRepositoryImpl.java
+    │   │   │       │   ├── MemberRepository.java
+    │   │   │       │   ├── MemberRepositoryCustom.java
+    │   │   │       │   ├── MemberRepositoryImpl.java
+    │   │   │       │   └── PaymentRepository.java
     │   │   │       └── 📂service
     │   │   │           ├── BannerService.java
     │   │   │           ├── ChatbotService.java
@@ -244,6 +259,96 @@ CI/CD
 <br>
 
 ## 🐞 트러블 슈팅
+
+<details><summary>🎯 가격 데이터 파싱 및 버튼 UI 출력</summary> <br>
+
+##
+
+
+## 📌 문제 설명
+공연 등록 시 "VIP석 110,000원, R석 90,000원"과 같은 문자열 형태의 가격 데이터를 사용자가 직관적으로 선택할 수 있도록 버튼 형태로 출력해야 했습니다.
+하지만 이 문자열을 프론트에서 바로 활용하기에는 가공이 어려웠고, 좌석 유형과 가격 정보를 구조화된 형태로 분리할 필요가 있었습니다.
+
+<br>
+
+## 🔍 문제 발생 경과
+처음에는 단순히 문자열을 출력하거나 split()으로 처리하려 했지만,
+
+1. 좌석 타입과 가격을 명확히 구분하기 어려움
+
+2. 문자열 파싱 오류 발생 시 프론트 출력 실패
+
+3. 좌석 유형이 추가될 경우 확장성이 떨어지는 문제 발생
+
+이로 인해 파싱 로직은 백엔드에서 처리하고,
+프론트에는 가공된 데이터를 전달하는 방식으로 구조를 전환하게 되었습니다.
+
+<br>
+
+
+## 🔧 해결 방안 및 코드 설명
+🔹 Java – 가격 문자열 파싱 함수 작성
+문자열을 서버에서 파싱하여 좌석 타입과 가격을 Map<String, String> 형태로 반환
+
+```
+public List<Map<String, String>> parsePriceData(String rawPriceData) {
+    List<Map<String, String>> priceList = new ArrayList<>();
+    if (rawPriceData == null || rawPriceData.isBlank()) {
+        return priceList;
+    }
+    String[] priceEntries = rawPriceData.split(", ");
+
+    for (String entry : priceEntries) {
+        String[] parts = entry.split(" ");
+        if (parts.length == 2) {
+            Map<String, String> priceMap = new HashMap<>();
+            priceMap.put("seatType", parts[0]);
+            priceMap.put("price", parts[1]);
+            priceList.add(priceMap);
+        }
+    }
+    return priceList;
+}
+```
+🔹 Thymeleaf – 버튼 UI 렌더링
+```
+<div class="price-button-container">
+    <div th:each="entry : ${priceOptions}">
+        <button class="price-button"
+                th:text="${entry['seatType']} + ' ' + ${entry['price']}"
+                th:data-price="${entry['price']}"
+                onclick="selectPrice(this)">
+        </button>
+    </div>
+</div>
+<p><strong>선택한 가격: </strong><span id="selectedPrice">없음</span></p>
+```
+🔹 JavaScript – 선택된 가격 표시
+```
+function selectPrice(button) {
+    document.querySelectorAll('.price-button').forEach(btn => btn.classList.remove('selected'));
+
+    button.classList.add('selected');
+
+    let priceText = button.getAttribute("data-price").replace(/,/g, "").replace("원", "");
+    let price = parseInt(priceText, 10);
+
+    document.getElementById('selectedPrice').innerText = price.toLocaleString() + '원';
+}
+```
+<br>
+
+## ✅ 결론
+- 복잡하게 구성된 가격 문자열을 구조화된 데이터로 변환함으로써, 프론트엔드에서의 UI 구현이 훨씬 단순해졌습니다.
+
+- 좌석 유형 추가나 가격 구조 변경에도 유연하게 대응할 수 있어 확장성과 유지보수성이 높아졌습니다.
+
+- 단순한 파싱 문제가 아니라, 백엔드-프론트 간 데이터 전달 설계의 중요성을 경험할 수 있었던 문제였습니다.
+
+
+##
+</details>
+
 
 <br>
 <br>
