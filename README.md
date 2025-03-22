@@ -1,4 +1,4 @@
-!![Image](https://github.com/user-attachments/assets/1a793bb5-fd25-4828-9a1f-58605a3f79c9)
+![Image](https://github.com/user-attachments/assets/1a793bb5-fd25-4828-9a1f-58605a3f79c9)
 
 # 🎫 **Spring Boot 티켓팅 홈페이지 프로젝트**
 
