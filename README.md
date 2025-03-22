@@ -1,4 +1,4 @@
-![Image](https://github.com/user-attachments/assets/099d1ec3-50e9-4b7c-be76-b6b73146eb53)
+!![Image](https://github.com/user-attachments/assets/1a793bb5-fd25-4828-9a1f-58605a3f79c9)
 
 # 🎫 **Spring Boot 티켓팅 홈페이지 프로젝트**
 
@@ -369,4 +369,4 @@ function selectPrice(button) {
 
 ## 🔗 배포 주소
 
-> 현재 해당 프로젝트는 로컬 개발 기반이며, 추후 AWS 기반으로 배포 예정입니다.
+> http://3.39.20.170
